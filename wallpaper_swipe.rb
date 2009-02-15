@@ -1,5 +1,4 @@
 require 'fileutils'
-require 'open-uri'
 require 'rexml/document'
 require 'vendor/htree'
 
@@ -20,6 +19,10 @@ class DownloadHistory
   end
 end
 
+def http_get_string(url)
+  `curl -s #{url}`
+end
+
 def log(msg)
   puts msg if LOGGING
 end
@@ -31,17 +34,14 @@ def process_image(remote_path)
   if @@download_history.already_downloaded?(remote_path)
     log "Already downloaded #{remote_path}, skipping"
   else
-    img = open remote_path
+    `curl -s -o #{local_path} #{remote_path}`
     log "Saved #{remote_path} to #{local_path}"
-    File.open(local_path, 'w') do |f|
-      f << img.gets(nil)
-    end
     @@download_history.log(remote_path)
   end
 end
 
 def process_page(url)
-  page_doc = HTree(open(url)).to_rexml
+  page_doc = HTree(http_get_string(url)).to_rexml
   REXML::XPath.each(page_doc, "//img") do |img_elt|
     if img_elt.attributes['class'] == 'bpImage'
       process_image img_elt.attributes['src']
@@ -54,10 +54,9 @@ if __FILE__ == $0
   FileUtils.mkdir_p(PICTURES_FOLDER) unless File.exist?(PICTURES_FOLDER)
   @@download_history = DownloadHistory.new
   LOGGING = ENV['LOGGING']
-  xml = open 'http://www.boston.com/bigpicture/index.xml'
+  xml = http_get_string 'http://www.boston.com/bigpicture/index.xml'
   rexml_doc = REXML::Document.new xml
   rexml_doc.elements.each('rss/channel/item/link') do |link_elt|
     process_page link_elt.text.to_s
-    exit
   end
 end
