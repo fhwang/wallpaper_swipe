@@ -33,7 +33,7 @@ def process_image(remote_path)
   local_path = File.join(PICTURES_FOLDER, basename)
   if @@download_history.already_downloaded?(remote_path) &&
      (!File.exist?(local_path) || File.size(local_path) >= FILE_THRESHOLD)
-    # skip
+    log "Already downloaded #{remote_path}, skipping"
   else
     tries = 0
     until (
