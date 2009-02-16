@@ -31,12 +31,23 @@ def process_image(remote_path)
   remote_path =~ %r|/([^/]+)$|
   basename = $1
   local_path = File.join(PICTURES_FOLDER, basename)
-  if @@download_history.already_downloaded?(remote_path)
-    log "Already downloaded #{remote_path}, skipping"
+  if @@download_history.already_downloaded?(remote_path) &&
+     (!File.exist?(local_path) || File.size(local_path) >= FILE_THRESHOLD)
+    # skip
   else
-    `curl -s -o #{local_path} #{remote_path}`
-    log "Saved #{remote_path} to #{local_path}"
-    @@download_history.log(remote_path)
+    tries = 0
+    until (
+      tries > 1 ||
+      (File.exist?(local_path) && File.size(local_path) >= FILE_THRESHOLD)
+    )
+      `curl -s -o #{local_path} #{remote_path}`
+      log "Saved #{remote_path} to #{local_path}"
+      tries += 1
+    end
+    if File.exist?(local_path)
+      @@download_history.log(remote_path)
+      @@new_files = true
+    end
   end
 end
 
@@ -50,8 +61,12 @@ def process_page(url)
 end
 
 if __FILE__ == $0
+  @@new_files = false
+  FILE_THRESHOLD = 16 * 1024
   PICTURES_FOLDER = File.expand_path '~/Pictures/wallpaper_swipe'
   FileUtils.mkdir_p(PICTURES_FOLDER) unless File.exist?(PICTURES_FOLDER)
+  APPROVED_FOLDER = File.join(PICTURES_FOLDER, 'approved')
+  FileUtils.mkdir_p(APPROVED_FOLDER) unless File.exist?(APPROVED_FOLDER)
   @@download_history = DownloadHistory.new
   LOGGING = ENV['LOGGING']
   xml = http_get_string 'http://www.boston.com/bigpicture/index.xml'
@@ -59,4 +74,5 @@ if __FILE__ == $0
   rexml_doc.elements.each('rss/channel/item/link') do |link_elt|
     process_page link_elt.text.to_s
   end
+  `open #{PICTURES_FOLDER}` if @@new_files
 end
