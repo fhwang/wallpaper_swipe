@@ -1,0 +1,53 @@
+wallpaper_swipe
+===============
+
+wallpaper_swipe is a quick script that scrapes photos off of The Boston Globe's
+"The Big Picture" site [http://www.boston.com/bigpicture/] and downloads it for 
+use as a desktop wallpaper. It's geared towards OS X; if anybody wants to patch
+it for other OSes that'd be cool too.
+
+Setup
+=====
+
+1. Run the script once by hand. This will take a long time.
+
+  $ ruby wallpaper_swipe.rb
+
+  or:
+
+  $ LOGGING=true ruby wallpaper_swipe.rb # Lots of log messages
+
+This will download every image it can find based on The Big Picture's current
+RSS feed and download it into ~/Pictures/wallpaper_swipe. It will then open
+that directory in Finder and you can scan through (Cover Flow is great for 
+this). Every image that you like should go into the subdirectory 
+~/Pictures/wallpaper_swipe/approved .
+
+The reason there's a manual approval process is that some of TBP's photos are 
+of, say, a dead child after a terrorist attack: Stirring photography, perhaps, 
+but maybe not something you want as a desktop image. Or pictures of scantily 
+clad people during Carnival, which might be NSFW, depending on where W is.
+
+2. Set your System Preferences to use the "approved" folder for desktop images.
+
+Open System Preferences and go to the Desktop & Screen Saver pane. Add the 
+~/Pictures/wallpaper_swipe/approved folder to the folder pane on the left (use 
+the "+" button, or just drag the folder into the folder pane). Select that 
+folder and tweak your settings.
+
+3. Setup a cron to download incremental updates.
+
+After you've run the script once, running it again will only download new photos. I set this up to run every day at 4 a.m.:
+
+  0 4 * * * cd /Users/francis/Tech/ruby/wallpaper_swipe; /usr/local/bin/ruby wallpaper_swipe.rb
+
+If it downloads any new photos, it will open the ~/Pictures/wallpaper_swipe 
+folder in the Finder again. That way when I get on my computer in the morning I 
+know if I have any new images to sort through.
+
+Comments or patches welcome. And it would be great if nobody used this code to 
+take credit for or profit from TBP's photos. Most photographers work very hard 
+for not much money, and deserve our consideration.
+
+Copyright (c) 2009 Francis Hwang, released under the MIT license
+
