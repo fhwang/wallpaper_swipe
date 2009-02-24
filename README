@@ -37,7 +37,8 @@ folder and tweak your settings.
 
 3. Setup a cron to download incremental updates.
 
-After you've run the script once, running it again will only download new photos. I set this up to run every day at 4 a.m.:
+After you've run the script once, running it again will only download new
+photos. I set this up to run every day at 4 a.m.:
 
   0 4 * * * cd /Users/francis/Tech/ruby/wallpaper_swipe; /usr/local/bin/ruby wallpaper_swipe.rb
 
