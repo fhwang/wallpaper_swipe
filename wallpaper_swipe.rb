@@ -1,5 +1,6 @@
 require 'fileutils'
 require 'rexml/document'
+$: << './vendor'
 require 'vendor/htree'
 
 class DownloadHistory
